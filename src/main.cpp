@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <config.h>
 // Simple date conversions and calculations
 // Date and time functions using just software, based on millis() & timer
 
@@ -92,8 +93,7 @@ TinyGPSPlus gps;
 TinyGPSTime t;
 TinyGPSDate d;
 #include "../lib/maidenhead/maidenhead.h"
-char* locator = "AA00";
-char* locator_full = "AA00AA";
+
 
 int resync = 0;
 //#include "Adafruit_MCP23017.h"
@@ -146,10 +146,10 @@ enum mode
 #define FT8_TONE_SPACING        625          // ~6.25 Hz
  */
 unsigned long freq;
-//char message[] = "CQ DO7GN JN48";
-char call[] = "N0CALL";
 
-//char loc[] = "JN48";
+
+
+
 uint8_t dbm = 27;
 uint8_t tx_buffer[255];
 uint8_t symbol_count;
@@ -158,13 +158,15 @@ uint16_t tone_delay, tone_spacing;
 enum mode cur_mode = DEFAULT_MODE;
 
 #define LED_PIN 13
-#define RELAY_PIN 5
+#define RELAY_PIN1 9
+#define RELAY_PIN2 9
+#define RELAY_PIN3 10
 
 
 //-------------------------------------------------------------------------------------
 // DEBUG
 
-//#define DEBUG
+
 
 #ifdef DEBUG
 #define DEBUG_BEGIN(x) Serial.begin(x);
@@ -176,7 +178,7 @@ enum mode cur_mode = DEFAULT_MODE;
 #define DEBUG_PRINTLN(x)
 #endif
 
-//#define DEBUG_GPS
+
 #ifdef DEBUG_GPS
 #define DEBUG_GPS_PRINT(x) Serial.print(x)
 #define DEBUG_GPS_PRINTLN(x) Serial.println(x)
@@ -185,13 +187,16 @@ enum mode cur_mode = DEFAULT_MODE;
 #define DEBUG_GPS_PRINTLN(x)
 #endif
 
+
+
+
 // Loop through the string, transmitting one character at a time.
-void encode()
+void encode(si5351_clock clk)
 {
   uint8_t i;
 
   // Reset the tone to the base frequency and turn on the output
-  si5351.output_enable(SI5351_CLK0, 1);
+  si5351.output_enable(clk, 1);
   digitalWrite(LED_PIN, HIGH);
 
   for (i = 0; i < symbol_count; i++)
@@ -200,9 +205,8 @@ void encode()
     si5351.set_freq((freq * 100) + (tx_buffer[i] * tone_spacing), SI5351_CLK0);
     delay(tone_delay);
   }
-
   // Turn off the output
-  si5351.output_enable(SI5351_CLK0, 0);
+  si5351.output_enable(clk, 0);
   digitalWrite(LED_PIN, LOW);
 }
 
@@ -334,11 +338,13 @@ void setup()
   // the library initializes this with an Adafruit splash screen.
   display.display();
   delay(2000); // Pause for 2 seconds
-
+  
   // Clear the buffer
   display.clearDisplay();
   delay(2000);
   printGPS(false);
+
+  if(!POWERTEST){
   //printGPS(" GPS");
   DEBUG_PRINTLN("Wait for GPS");
   while (!gps.location.isValid())
@@ -409,6 +415,7 @@ void setup()
   printTime(time);
   DEBUG_PRINTLN("Time syncing");
   // Initialize the Si5351
+  }
   printText("Start SI5351", true);
   DEBUG_PRINTLN("Start SI5351");
   si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
@@ -416,13 +423,16 @@ void setup()
   // Use the Arduino's on-board LED as a keying indicator.
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
-    pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, LOW);
+    pinMode(RELAY_PIN1, OUTPUT);
+  digitalWrite(RELAY_PIN1, LOW);
 
   // Set CLK0 output
-  si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA); // Set for max power if desired
+  si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_4MA); // Set for max power if desired
   si5351.output_enable(SI5351_CLK0, 0);                 // Disable the clock initially
-
+  si5351.drive_strength(SI5351_CLK1, SI5351_DRIVE_8MA); // Set for max power if desired
+  si5351.output_enable(SI5351_CLK1, 0);
+  si5351.drive_strength(SI5351_CLK2, SI5351_DRIVE_8MA); // Set for max power if desired
+  si5351.output_enable(SI5351_CLK2, 0);      
   // switch (cur_mode)
   //{
 
@@ -454,20 +464,20 @@ void setup()
 
 }
 
-void send_wspr()
+void send_wspr(si5351_clock clk, int relay)
 {
   printTX(true);
   printBand(currentBand, true);
 
-  digitalWrite(RELAY_PIN, HIGH);
+  digitalWrite(relay, HIGH);
 
   //printText("TX "+currentBand +" >");
   DEBUG_PRINTLN("Transmisson " + currentBand + " started");
   //printText("TX "+currentBand);
   //mcp.digitalWrite(0, HIGH);
-  encode();
+  encode(clk);
   //mcp.digitalWrite(0, LOW);
-  digitalWrite(RELAY_PIN, LOW);
+  digitalWrite(relay, LOW);
 
   //printText("TX "+currentBand +">|");
   printTX(false);
@@ -477,7 +487,7 @@ void send_wspr()
 
 void loop()
 {
-
+if(!POWERTEST){
   //DEBUG_PRINTLN(resync);
   /*    if (resync==1){
            DEBUG_PRINTLN("-----------------");
@@ -531,7 +541,7 @@ oldMinute = rtc_time.minute();
       DEBUG_PRINTLN("Send 80m");
       currentBand = "80m";
       freq = WSPR_80m_FREQ;
-      send_wspr();
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
       DEBUG_PRINTLN("Finished 80m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -544,7 +554,7 @@ oldMinute = rtc_time.minute();
       DEBUG_PRINTLN("Send 10m");
       currentBand = "10m";
       freq = WSPR_10m_FREQ;
-      send_wspr();
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
       DEBUG_PRINTLN("Finished 10m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -554,4 +564,16 @@ oldMinute = rtc_time.minute();
   }
   // Sleep until next TX
   delay(500);
+  }else{
+     DEBUG_PRINTLN("Send 80m");
+      currentBand = "80m";
+      freq = WSPR_80m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 80m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+      delay(10000);
+  }
 }
