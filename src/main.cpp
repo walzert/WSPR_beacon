@@ -94,19 +94,10 @@ TinyGPSTime t;
 TinyGPSDate d;
 #include "../lib/maidenhead/maidenhead.h"
 
-
+//-------------------------------------------------------------------------------------
+// Time Plan
 int resync = 0;
-//#include "Adafruit_MCP23017.h"
-String oldTime = " ";
-
 String currentBand;
-
-// TIME KEEPING
-
-//RTC_Millis rtc;
-//Adafruit_MCP23017
-//Adafruit_MCP23017 mcp;
-//Adafruit_SSD1306
 
 //-------------------------------------------------------------------------------------
 // SI5351 + JTEncode
@@ -120,37 +111,10 @@ Si5351 si5351;
 //-------------------------------------------------------------------------------------
 //JTEncode
 JTEncode jtencode;
-enum mode
-{
-  MODE_WSPR,
-  MODE_FT8
-};
-// Global variables
-//#define WSPR_FREQ       14096900UL // 20M, 14.094,60
-//#define WSPR_DEFAULT_FREQ   3568800ULL //80m
 
-#define WSPR_DEFAULT_FREQ 3586600ULL //80m
-
-#define WSPR_80m_FREQ 3594000UL //80m 
-//old  #define WSPR_80m_FREQ 3592600ULL
-#define WSPR_10m_FREQ 28125900UL
-// old #define WSPR_10m_FREQ 28125200UL
-
-#define WSPR_2m_FREQ 144504000UL //80m
-
-#define WSPR_DELAY 683        // Delay value for WSPR
-#define WSPR_TONE_SPACING 146 // ~1.46 Hz
-
-/* #define FT8_DELAY               159          // Delay value for FT8
-#define FT8_DEFAULT_FREQ        14096900UL
-#define FT8_TONE_SPACING        625          // ~6.25 Hz
- */
 unsigned long freq;
 
 
-
-
-uint8_t dbm = 27;
 uint8_t tx_buffer[255];
 uint8_t symbol_count;
 uint16_t tone_delay, tone_spacing;
@@ -166,8 +130,6 @@ enum mode cur_mode = DEFAULT_MODE;
 //-------------------------------------------------------------------------------------
 // DEBUG
 
-
-
 #ifdef DEBUG
 #define DEBUG_BEGIN(x) Serial.begin(x);
 #define DEBUG_PRINT(x) Serial.print(x)
@@ -178,7 +140,6 @@ enum mode cur_mode = DEFAULT_MODE;
 #define DEBUG_PRINTLN(x)
 #endif
 
-
 #ifdef DEBUG_GPS
 #define DEBUG_GPS_PRINT(x) Serial.print(x)
 #define DEBUG_GPS_PRINTLN(x) Serial.println(x)
@@ -186,8 +147,6 @@ enum mode cur_mode = DEFAULT_MODE;
 #define DEBUG_GPS_PRINT(x)
 #define DEBUG_GPS_PRINTLN(x)
 #endif
-
-
 
 
 // Loop through the string, transmitting one character at a time.
@@ -214,17 +173,7 @@ void set_tx_buffer()
 {
   // Clear out the transmit buffer
   memset(tx_buffer, 0, 255);
-  // switch (cur_mode)
-  //  {
-
-  //  case MODE_WSPR:
   jtencode.wspr_encode(call, locator, dbm, tx_buffer);
-
-  //    break;
-  /*     case MODE_FT8:
- jtencode.ft8_encode(message, tx_buffer);
-      break; */
-  //  }
 }
 
 void printGPS(bool GPS)
@@ -328,12 +277,6 @@ void setup()
     for (;;)
       ; // Don't proceed, loop forever
   }
-
-  /*  mcp.begin();      // use default address 0
-
-  mcp.pinMode(0, OUTPUT);
-  mcp.pinMode(1, OUTPUT);
-  mcp.pinMode(2, OUTPUT); */
   // Show initial display buffer contents on the screen --
   // the library initializes this with an Adafruit splash screen.
   display.display();
@@ -343,7 +286,11 @@ void setup()
   display.clearDisplay();
   delay(2000);
   printGPS(false);
+  DateTime starttime = rtc.now();
 
+  // TX
+  String time = starttime.toString(buf1);
+  printTime(time);
   if(!POWERTEST){
   //printGPS(" GPS");
   DEBUG_PRINTLN("Wait for GPS");
@@ -427,7 +374,7 @@ void setup()
   digitalWrite(RELAY_PIN1, LOW);
 
   // Set CLK0 output
-  si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_4MA); // Set for max power if desired
+  si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA); // Set for max power if desired
   si5351.output_enable(SI5351_CLK0, 0);                 // Disable the clock initially
   si5351.drive_strength(SI5351_CLK1, SI5351_DRIVE_8MA); // Set for max power if desired
   si5351.output_enable(SI5351_CLK1, 0);
@@ -524,19 +471,25 @@ oldMinute = rtc_time.minute();
   String myTime = String(rtc_time.hour()) + ":"+String(rtc_time.minute());
   printTime(myTime);
 }
-  // TX
-  // DEBUG_PRINT(rtc_time.hour());
-  // DEBUG_PRINT(":");
-  // DEBUG_PRINT(rtc_time.minute());
-  // DEBUG_PRINT(":");
-  // DEBUG_PRINTLN(rtc_time.second());
-  //oldTime=time;
 
-
-  //}
-  if (rtc_time.second() == 0)
+  if (rtc_time.second() == 01)
   {
-    if (rtc_time.minute() == 02 || rtc_time.minute() == 12 || rtc_time.minute() == 22 || rtc_time.minute() == 32 || rtc_time.minute() == 42 || rtc_time.minute() == 52)
+// 160m 
+  
+if (rtc_time.minute() == 00 || rtc_time.minute() == 20 ||  rtc_time.minute() == 40 & send_160m )
+    {
+      DEBUG_PRINTLN("Send 160m");
+      currentBand = "160m";
+      freq = WSPR_160m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 160m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+    } 
+// 80m 
+    if (rtc_time.minute() == 2 || rtc_time.minute() == 22 ||  rtc_time.minute() == 42 & send_80m )
     {
       DEBUG_PRINTLN("Send 80m");
       currentBand = "80m";
@@ -548,8 +501,105 @@ oldMinute = rtc_time.minute();
       DEBUG_PRINT(rtc.getTemperature());
       DEBUG_PRINTLN("°C");
     }
+// 60m 
+   
+if (rtc_time.minute() == 4 || rtc_time.minute() == 24 ||  rtc_time.minute() == 44 & send_60m )
+    {
+      DEBUG_PRINTLN("Send 60m");
+      currentBand = "60m";
+      freq = WSPR_60m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 60m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+    } 
+// 40m 
+   
+if (rtc_time.minute() == 6 || rtc_time.minute() == 26 ||  rtc_time.minute() == 46 & send_40m )
+    {
+      DEBUG_PRINTLN("Send 40m");
+      currentBand = "40m";
+      freq = WSPR_40m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 40m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+    } 
+// 30m 
+ 
+if (rtc_time.minute() == 8 || rtc_time.minute() == 28 ||  rtc_time.minute() == 48 & send_30m )
+    {
+      DEBUG_PRINTLN("Send 30m");
+      currentBand = "30m";
+      freq = WSPR_30m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 30m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+    } 
+// 20m 
+  
+if (rtc_time.minute() == 10 || rtc_time.minute() == 30 ||  rtc_time.minute() == 50 & send_20m )
+    {
+      DEBUG_PRINTLN("Send 20m");
+      currentBand = "20m";
+      freq = WSPR_20m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 20m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+    } 
+// 17m 
+  
+if (rtc_time.minute() == 12 || rtc_time.minute() == 32 ||  rtc_time.minute() == 52 & send_17m )
+    {
+      DEBUG_PRINTLN("Send 17m");
+      currentBand = "17m";
+      freq = WSPR_17m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 17m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+    } 
+// 15m 
 
-    if (rtc_time.minute() == 06 || rtc_time.minute() == 16 || rtc_time.minute() == 26 || rtc_time.minute() == 36 || rtc_time.minute() == 46 || rtc_time.minute() == 56)
+if (rtc_time.minute() == 14 || rtc_time.minute() == 34 ||  rtc_time.minute() == 54 & send_15m )
+    {
+      DEBUG_PRINTLN("Send 15m");
+      currentBand = "15m";
+      freq = WSPR_15m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 15m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+    } 
+// 12m 
+   
+if (rtc_time.minute() == 16 || rtc_time.minute() == 36 ||  rtc_time.minute() == 56 & send_12m )
+    {
+      DEBUG_PRINTLN("Send 12m");
+      currentBand = "12m";
+      freq = WSPR_12m_FREQ;
+      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      DEBUG_PRINTLN("Finished 12m");
+      resync = 0;
+      printTemp(String(rtc.getTemperature()));
+      DEBUG_PRINT(rtc.getTemperature());
+      DEBUG_PRINTLN("°C");
+    } 
+    if (rtc_time.minute() == 18 || rtc_time.minute() == 38 || rtc_time.minute() == 58 & send_10m )
     {
       DEBUG_PRINTLN("Send 10m");
       currentBand = "10m";
