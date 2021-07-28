@@ -122,10 +122,6 @@ uint16_t tone_delay, tone_spacing;
 enum mode cur_mode = DEFAULT_MODE;
 
 #define LED_PIN 13
-#define RELAY_PIN1 9
-#define RELAY_PIN2 9
-#define RELAY_PIN3 10
-
 
 //-------------------------------------------------------------------------------------
 // DEBUG
@@ -481,7 +477,7 @@ if (rtc_time.minute() == 00 || rtc_time.minute() == 20 ||  rtc_time.minute() == 
       DEBUG_PRINTLN("Send 160m");
       currentBand = "160m";
       freq = WSPR_160m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_160m,RELAY_160m);
       DEBUG_PRINTLN("Finished 160m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -494,7 +490,7 @@ if (rtc_time.minute() == 00 || rtc_time.minute() == 20 ||  rtc_time.minute() == 
       DEBUG_PRINTLN("Send 80m");
       currentBand = "80m";
       freq = WSPR_80m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_80m,RELAY_80m);
       DEBUG_PRINTLN("Finished 80m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -508,7 +504,7 @@ if (rtc_time.minute() == 4 || rtc_time.minute() == 24 ||  rtc_time.minute() == 4
       DEBUG_PRINTLN("Send 60m");
       currentBand = "60m";
       freq = WSPR_60m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_60m,RELAY_60m);
       DEBUG_PRINTLN("Finished 60m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -522,7 +518,7 @@ if (rtc_time.minute() == 6 || rtc_time.minute() == 26 ||  rtc_time.minute() == 4
       DEBUG_PRINTLN("Send 40m");
       currentBand = "40m";
       freq = WSPR_40m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_40m,RELAY_40m);
       DEBUG_PRINTLN("Finished 40m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -536,7 +532,7 @@ if (rtc_time.minute() == 8 || rtc_time.minute() == 28 ||  rtc_time.minute() == 4
       DEBUG_PRINTLN("Send 30m");
       currentBand = "30m";
       freq = WSPR_30m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_30m,RELAY_30m);
       DEBUG_PRINTLN("Finished 30m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -550,7 +546,7 @@ if (rtc_time.minute() == 10 || rtc_time.minute() == 30 ||  rtc_time.minute() == 
       DEBUG_PRINTLN("Send 20m");
       currentBand = "20m";
       freq = WSPR_20m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_20m,RELAY_20m);
       DEBUG_PRINTLN("Finished 20m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -564,7 +560,7 @@ if (rtc_time.minute() == 12 || rtc_time.minute() == 32 ||  rtc_time.minute() == 
       DEBUG_PRINTLN("Send 17m");
       currentBand = "17m";
       freq = WSPR_17m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_17m,RELAY_17m);
       DEBUG_PRINTLN("Finished 17m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -578,7 +574,7 @@ if (rtc_time.minute() == 14 || rtc_time.minute() == 34 ||  rtc_time.minute() == 
       DEBUG_PRINTLN("Send 15m");
       currentBand = "15m";
       freq = WSPR_15m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_15m,RELAY_15m);
       DEBUG_PRINTLN("Finished 15m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -592,7 +588,7 @@ if (rtc_time.minute() == 16 || rtc_time.minute() == 36 ||  rtc_time.minute() == 
       DEBUG_PRINTLN("Send 12m");
       currentBand = "12m";
       freq = WSPR_12m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_12m,RELAY_12m);
       DEBUG_PRINTLN("Finished 12m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));
@@ -604,7 +600,7 @@ if (rtc_time.minute() == 16 || rtc_time.minute() == 36 ||  rtc_time.minute() == 
       DEBUG_PRINTLN("Send 10m");
       currentBand = "10m";
       freq = WSPR_10m_FREQ;
-      send_wspr(SI5351_CLK0,RELAY_PIN1);
+      send_wspr(OUTPUT_10m,RELAY_10m);
       DEBUG_PRINTLN("Finished 10m");
       resync = 0;
       printTemp(String(rtc.getTemperature()));

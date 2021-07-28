@@ -1,7 +1,9 @@
 // CALL
+//N0CALL
 char call[] = "N0CALL";
 
 // LOCATOR
+// AA00AA
 char* locator = "AA00";
 char* locator_full = "AA00AA";
 
@@ -54,3 +56,44 @@ bool send_10m = true;
 bool send_6m = false;
 bool send_4m = false;
 bool send_2m = false;
+
+#define RELAY_PIN1 9
+#define RELAY_PIN2 9
+#define RELAY_PIN3 10
+
+
+// Relays
+#define RELAY_160m RELAY_PIN2  //160m 
+#define RELAY_80m RELAY_PIN1  //80m 
+#define RELAY_60m RELAY_PIN2  //60m 
+#define RELAY_40m RELAY_PIN2  //40m 
+#define RELAY_30m RELAY_PIN2  //30m 
+#define RELAY_20m RELAY_PIN2  //20m 
+#define RELAY_17m RELAY_PIN2  //17m 
+#define RELAY_15m RELAY_PIN2  //15m 
+#define RELAY_12m RELAY_PIN2  //12m 
+#define RELAY_10m RELAY_PIN1  //10m 
+#define RELAY_6m RELAY_PIN2  //6m 
+#define RELAY_4m RELAY_PIN2  //4m 
+#define RELAY_2m RELAY_PIN2  //2m 
+
+
+//Output
+#define OUTPUT_160m SI5351_CLK0  //160m 
+#define OUTPUT_80m SI5351_CLK0  //80m 
+#define OUTPUT_60m SI5351_CLK0  //60m 
+#define OUTPUT_40m SI5351_CLK0  //40m 
+#define OUTPUT_30m SI5351_CLK0  //30m 
+#define OUTPUT_20m SI5351_CLK0  //20m 
+#define OUTPUT_17m SI5351_CLK0  //17m 
+#define OUTPUT_15m SI5351_CLK0  //15m 
+#define OUTPUT_12m SI5351_CLK0  //12m 
+#define OUTPUT_10m SI5351_CLK0  //10m 
+#define OUTPUT_6m SI5351_CLK0  //6m 
+#define OUTPUT_4m SI5351_CLK0  //4m 
+#define OUTPUT_2m SI5351_CLK0  //2m 
+
+
+
+
+
