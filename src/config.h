@@ -1,9 +1,8 @@
 // CALL
-//N0CALL
 char call[] = "N0CALL";
 
+
 // LOCATOR
-// AA00AA
 char* locator = "AA00";
 char* locator_full = "AA00AA";
 
@@ -15,26 +14,20 @@ char* locator_full = "AA00AA";
 bool POWERTEST = false;
 
 
-enum mode
-{
-  MODE_WSPR,
-  MODE_FT8
-};
 // Global variables
-#define WSPR_DEFAULT_FREQ 3586600ULL //80m
 #define WSPR_160m_FREQ 1836600UL //160m 
-#define WSPR_80m_FREQ 3594000UL //80m 
-#define WSPR_60m_FREQ 5287200UL //60m 
-#define WSPR_40m_FREQ 7038600UL //40m 
-#define WSPR_30m_FREQ 10138700UL //30m 
-#define WSPR_20m_FREQ 14095600UL //20m 
-#define WSPR_17m_FREQ 18104600UL //17m 
-#define WSPR_15m_FREQ 21094600UL //15m 
-#define WSPR_12m_FREQ 24924600UL //12m 
-#define WSPR_10m_FREQ 28125900UL //10m
-#define WSPR_60m_FREQ 50293000UL //6m
-#define WSPR_40m_FREQ 70091000UL //4m
-#define WSPR_2m_FREQ 144504000UL //2m
+#define WSPR_80m_FREQ  3594000UL //80m 
+#define WSPR_60m_FREQ  5287200UL //60m 
+#define WSPR_40m_FREQ  7038600UL //40m 
+#define WSPR_30m_FREQ  10138700UL //30m 
+#define WSPR_20m_FREQ  14095600UL //20m 
+#define WSPR_17m_FREQ  18104600UL //17m 
+#define WSPR_15m_FREQ  21094600UL //15m 
+#define WSPR_12m_FREQ  24924600UL //12m 
+#define WSPR_10m_FREQ  28125400UL //10m
+#define WSPR_6m_FREQ  50293000UL //6m
+#define WSPR_4m_FREQ  70091000UL //4m
+#define WSPR_2m_FREQ   144504000UL //2m
 
 #define WSPR_DELAY 683        // Delay value for WSPR
 #define WSPR_TONE_SPACING 146 // ~1.46 Hz
@@ -58,7 +51,7 @@ bool send_4m = false;
 bool send_2m = false;
 
 #define RELAY_PIN1 9
-#define RELAY_PIN2 9
+#define RELAY_PIN2 7
 #define RELAY_PIN3 10
 
 
@@ -92,6 +85,8 @@ bool send_2m = false;
 #define OUTPUT_6m SI5351_CLK0  //6m 
 #define OUTPUT_4m SI5351_CLK0  //4m 
 #define OUTPUT_2m SI5351_CLK0  //2m 
+
+
 
 
 
