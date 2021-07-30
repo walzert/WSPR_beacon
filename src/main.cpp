@@ -320,6 +320,7 @@ void setup()
   // TX
   //String time = starttime.toString(buf1);
   printTime(starttime);
+  printText(call, true);
   if(!POWERTEST){
   //printGPS(" GPS");
   DEBUG_PRINTLN("Wait for GPS");
@@ -417,40 +418,37 @@ void setup()
   DEBUG_PRINTLN("Starting Transmisson mode...");
 
   //printText("TX ready");
-  printText(call, true);
+  
   printLocator();
   int delaying = 60 - (rtc.now().second());
   delay(delaying * 1000);
   printTemp();
-
 }
 
 void send_wspr_struct(Band band)
 {
-  freq = band_80m.freq;
+  freq = band.freq;
   printTX(true);
   printBand(band.name, true);
   digitalWrite(band.relay, HIGH);
-  DEBUG_PRINTLN("Transmisson " + currentBand + " started");
+  DEBUG_PRINTLN("Transmisson " + band.name + " started");
   encode(band.clk);
   digitalWrite(band.relay, LOW);
   printTX(false);
   printBand("", false);
-  DEBUG_PRINTLN("Transmisson  " + currentBand + " ended");
+  resync = 0;
+  printTemp();
+  DEBUG_PRINTLN("Transmisson  " + band.name + " ended");
 }
 
 void send_wspr(si5351_clock clk, int relay)
 {
   printTX(true);
   printBand(currentBand, true);
-
   digitalWrite(relay, HIGH);
-
   DEBUG_PRINTLN("Transmisson " + currentBand + " started");
-
   encode(clk);
   digitalWrite(relay, LOW);
-
   printTX(false);
   printBand("", false);
   DEBUG_PRINTLN("Transmisson  " + currentBand + " ended");
@@ -458,10 +456,21 @@ void send_wspr(si5351_clock clk, int relay)
 
 void loop()
 {
+
+
 if(!POWERTEST){
 
   DateTime rtc_time = rtc.now();
+/* if(rtc_time.hour() == 0 && rtc_time.minute() == 0 && rtc_time.second() == 0){
+  gps.encode(Serial1.read());
 
+  d = gps.date;
+  t = gps.time;
+
+  //set RTC to date from GPS
+
+  rtc.adjust(DateTime(d.year(), d.month(), d.day(), t.hour(), t.minute(), t.second()));
+} */
 if(rtc_time.minute() != oldMinute)
 {
 oldMinute = rtc_time.minute();
@@ -476,144 +485,67 @@ oldMinute = rtc_time.minute();
   
 if ((rtc_time.minute() == 00 || rtc_time.minute() == 20 ||  rtc_time.minute() == 40)  && send_160m )
     {
-      DEBUG_PRINTLN("Send 160m");
-      //send_wspr_struct(band_160m);
-      currentBand = "160m";
-      freq = WSPR_160m_FREQ;
-      send_wspr(OUTPUT_160m,RELAY_160m);
-      DEBUG_PRINTLN("Finished 160m");
-      resync = 0;
-      printTemp();
+      send_wspr_struct(band_160m);
     } 
 // 80m 
     if ((rtc_time.minute() == 2 || rtc_time.minute() == 22 ||  rtc_time.minute() == 42)  &&  send_80m )
     {
-      DEBUG_PRINTLN("Send 80m");
-      //send_wspr_struct(band_80m);
-      currentBand = "80m";
       send_wspr_struct(band_80m);
-      DEBUG_PRINTLN("Finished 80m");
-      resync = 0;
-      printTemp();
     }
 // 60m 
    
 if ((rtc_time.minute() == 4 || rtc_time.minute() == 24 ||  rtc_time.minute() == 44)  &&  send_60m )
     {
-      DEBUG_PRINTLN("Send 60m");
-      //send_wspr_struct(band_60m);
-      currentBand = "60m";
-      freq = WSPR_60m_FREQ;
-      send_wspr(OUTPUT_60m,RELAY_60m);
-      DEBUG_PRINTLN("Finished 60m");
-      resync = 0;
-      printTemp();
-
+      send_wspr_struct(band_60m);
     } 
 // 40m 
    
 if ((rtc_time.minute() == 6 || rtc_time.minute() == 26 ||  rtc_time.minute() == 46)  &&  send_40m )
     {
-      DEBUG_PRINTLN("Send 40m");
-      //send_wspr_struct(band_40m);
-      currentBand = "40m";
-      freq = WSPR_40m_FREQ;
-      send_wspr(OUTPUT_40m,RELAY_40m);
-      DEBUG_PRINTLN("Finished 40m");
-      resync = 0;
-      printTemp();
-
+      send_wspr_struct(band_40m);
     } 
 // 30m 
  
 if ((rtc_time.minute() == 8 || rtc_time.minute() == 28 ||  rtc_time.minute() == 48)  &&  send_30m )
     {
-      DEBUG_PRINTLN("Send 30m");
-      //send_wspr_struct(band_30m);
-      currentBand = "30m";
-      freq = WSPR_30m_FREQ;
-      send_wspr(OUTPUT_30m,RELAY_30m);
-      DEBUG_PRINTLN("Finished 30m");
-      resync = 0;
-      printTemp();
-
+      send_wspr_struct(band_30m);
     } 
 // 20m 
   
 if ((rtc_time.minute() == 10 || rtc_time.minute() == 30 ||  rtc_time.minute() == 50)  &&  send_20m )
     {
-      DEBUG_PRINTLN("Send 20m");
-      //send_wspr_struct(band_20m);
-      currentBand = "20m";
-      freq = WSPR_20m_FREQ;
-      send_wspr(OUTPUT_20m,RELAY_20m);
-      DEBUG_PRINTLN("Finished 20m");
-      resync = 0;
-      printTemp();
-
+      send_wspr_struct(band_20m);
     } 
 // 17m 
   
 if ((rtc_time.minute() == 12 || rtc_time.minute() == 32 ||  rtc_time.minute() == 52)  &&  send_17m )
     {
-      DEBUG_PRINTLN("Send 17m");
-      //send_wspr_struct(band_17m);
-      currentBand = "17m";
-      freq = WSPR_17m_FREQ;
-      send_wspr(OUTPUT_17m,RELAY_17m);
-      DEBUG_PRINTLN("Finished 17m");
-      resync = 0;
-      printTemp();
-
+      send_wspr_struct(band_17m);
     } 
 // 15m 
 
 if ((rtc_time.minute() == 14 || rtc_time.minute() == 34 ||  rtc_time.minute() == 54)  && send_15m )
     {
-      DEBUG_PRINTLN("Send 15m");
-      //send_wspr_struct(band_15m);
-      currentBand = "15m";
-      freq = WSPR_15m_FREQ;
-      send_wspr(OUTPUT_15m,RELAY_15m);
-      DEBUG_PRINTLN("Finished 15m");
-      resync = 0;
-      printTemp();
+      send_wspr_struct(band_15m);
     } 
 // 12m 
    
 if ((rtc_time.minute() == 16 || rtc_time.minute() == 36 ||  rtc_time.minute() == 56)  &&  send_12m )
     {
-      DEBUG_PRINTLN("Send 12m");
-      //send_wspr_struct(band_12m);
-      currentBand = "12m";
-      freq = WSPR_12m_FREQ;
-      send_wspr(OUTPUT_12m,RELAY_12m);
-      DEBUG_PRINTLN("Finished 12m");
-      resync = 0;
-      printTemp();
+      send_wspr_struct(band_12m);
     } 
 // 10m 
     if ((rtc_time.minute() == 18 || rtc_time.minute() == 38 || rtc_time.minute() == 58)  &&  send_10m )
     {
-      DEBUG_PRINTLN("Send 10m");
-      //send_wspr_struct(band_10m);
-      currentBand = "10m";
-      freq = WSPR_10m_FREQ;
-      send_wspr(OUTPUT_10m,RELAY_10m);
-      DEBUG_PRINTLN("Finished 10m");
-      resync = 0;
-      printTemp();
-
+      send_wspr_struct(band_10m);
     }
   }
   // Sleep until next TX
   delay(500);
   }else{
-     DEBUG_PRINTLN("Send 80m");
       send_wspr_struct(band_80m);
-      DEBUG_PRINTLN("Finished 80m");
-      resync = 0;
-      printTemp();
-      delay(10000);
+      delay(20000);
+      send_wspr_struct(band_10m);
+      delay(20000);
   }
 }

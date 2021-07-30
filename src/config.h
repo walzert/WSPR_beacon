@@ -24,10 +24,10 @@ bool POWERTEST = false;
 #define WSPR_17m_FREQ  18104600UL //17m 
 #define WSPR_15m_FREQ  21094600UL //15m 
 #define WSPR_12m_FREQ  24924600UL //12m 
-#define WSPR_10m_FREQ  28125400UL //10m
-#define WSPR_6m_FREQ  50293000UL //6m
-#define WSPR_4m_FREQ  70091000UL //4m
-#define WSPR_2m_FREQ   144504000UL //2m
+#define WSPR_10m_FREQ  28125300UL //10m
+#define WSPR_6m_FREQ   50293000UL //6m
+#define WSPR_4m_FREQ   70091000UL //4m
+#define WSPR_2m_FREQ  144504000UL //2m
 
 #define WSPR_DELAY 683        // Delay value for WSPR
 #define WSPR_TONE_SPACING 146 // ~1.46 Hz
