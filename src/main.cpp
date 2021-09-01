@@ -1,3 +1,10 @@
+/* 
+This is a sketch for sending WSPR signals in Ham radio bands, you are not allowed to use this if you are not an radio amateur.
+There is a config.h file that could be used to enter your call sign and adjust the outputs of the SI5351.
+The sketch is first reciving GPS coordinates, time  and calculate the current maidenhead. 
+Then the SI5351 will be initilaized and after that the WSPR will send by active band and time slot.
+ */
+
 #include <Arduino.h>
 #include <config.h>
 
@@ -9,7 +16,6 @@
 #include "RTClib.h"
 RTC_DS3231 rtc;
 char buf1[] = "hh:mm";
-int oldHour = 0;
 int oldMinute = 0;
 char t_sz[32];
 char d_sz[32];
@@ -40,6 +46,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 TinyGPSPlus gps;
 TinyGPSTime t;
 TinyGPSDate d;
+TinyGPSInteger sats;
 #include "../lib/maidenhead/maidenhead.h"
 //-------------------------------------------------------------------------------------
 // Time Plan
@@ -62,7 +69,6 @@ unsigned long freq;
 uint8_t tx_buffer[255];
 uint8_t symbol_count;
 uint16_t tone_delay, tone_spacing;
-#define DEFAULT_MODE MODE_WSPR //  MODE_WSPR    //   MODE_FT8
 
 #define LED_PIN 13
 
@@ -79,7 +85,7 @@ struct Band{
 
 Band band_160m{"160m",WSPR_160m_FREQ,send_160m,RELAY_160m,OUTPUT_160m};
 Band band_80m{"80m",WSPR_80m_FREQ,send_80m,RELAY_80m,OUTPUT_80m};
-Band band_80m2{"80m",WSPR_80m_FREQ2,send_80m,RELAY_80m,OUTPUT_80m};
+//Band band_80m2{"80m",WSPR_80m_FREQ2,send_80m,RELAY_80m,OUTPUT_80m};
 Band band_60m{"60m",WSPR_60m_FREQ,send_60m,RELAY_60m,OUTPUT_60m};
 Band band_40m{"40m",WSPR_40m_FREQ,send_40m,RELAY_40m,OUTPUT_40m};
 Band band_30m{"30m",WSPR_30m_FREQ,send_30m,RELAY_30m,OUTPUT_30m};
@@ -110,7 +116,7 @@ Band band_10m{"10m",WSPR_10m_FREQ,send_10m,RELAY_10m,OUTPUT_10m};
 #define DEBUG_GPS_PRINTLN(x)
 #endif
 
-#ifndef _AVR
+#ifdef _AVR
 #define GPS_BEGIN(x)  Serial.begin(9600);
 #define GPS_AVAILABLE(x) Serial.available()
 #define GPS_READ(x) Serial.read()
@@ -139,7 +145,6 @@ void encode(si5351_clock clk)
   si5351.output_enable(clk, 0);
   digitalWrite(LED_PIN, LOW);
 }
-
 void set_tx_buffer()
 {
   // Clear out the transmit buffer
@@ -247,7 +252,7 @@ void printLocator()
   display.setTextSize(1);              // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE); // Draw white text
   display.setCursor(92, 24);           // Start at top-left corner
-  display.println(locator_full);
+  display.println(locator);
   display.display();
 }
 
@@ -271,12 +276,10 @@ void setup()
   GPS_BEGIN(9600);
   initDisplay();
   DateTime starttime = rtc.now();
-
   // TX
   //String time = starttime.toString(buf1);
-  printGPS(false);
+  printGPS(false); 
   printTime(starttime);
-
   if(!POWERTEST){
   //printGPS(" GPS");
   DEBUG_PRINTLN("Wait for GPS");
@@ -322,10 +325,14 @@ void setup()
         DEBUG_GPS_PRINT(gps.location.lat());
         DEBUG_GPS_PRINT("\tLong: ");
         DEBUG_GPS_PRINTLN(gps.location.lng());
+        //DEBUG_GPS_PRINT("\tSats: ");
+        //DEBUG_GPS_PRINTLN(gps.satellites.value());
+        //DEBUG_GPS_PRINTLN(String(gps.satellites));
       }
     }
   }
   
+  //jtencode.latlon_to_grid(float(gps.location.lat()), float(gps.location.lng()),locator);
   printGPS(true);
   locator = get_mh(gps.location.lat(), gps.location.lng(), 4);
   locator_full = get_mh(gps.location.lat(), gps.location.lng(), 6);
@@ -355,6 +362,7 @@ void setup()
 
   // Set SI5351  and outputs 
   si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
+  si5351.set_correction(calibration,SI5351_PLL_INPUT_XO);
   si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA); // Set for max power if desired
   si5351.output_enable(SI5351_CLK0, 0);            // Disable the clock initially
   si5351.drive_strength(SI5351_CLK1, SI5351_DRIVE_8MA); // Set for max power if desired
@@ -425,7 +433,7 @@ oldMinute = rtc_time.minute();
   printTime(rtc_time);
 }
 
-  if (rtc_time.second() == 01)
+  if (rtc_time.second() == 00)
   {
 // 160m   
 if ((rtc_time.minute() == 00 || rtc_time.minute() == 20 ||  rtc_time.minute() == 40))
@@ -435,11 +443,12 @@ if ((rtc_time.minute() == 00 || rtc_time.minute() == 20 ||  rtc_time.minute() ==
 // 80m 
     if ((rtc_time.minute() == 2 || rtc_time.minute() == 22 ||  rtc_time.minute() == 42))
     {
-      if(rtc_time.minute() == 42){
-        send_wspr_struct(band_80m2);
-      }
-      else {
-      send_wspr_struct(band_80m);}
+      //if(rtc_time.minute() == 42){
+      //  send_wspr_struct(band_80m2);
+     // }
+      //else {
+      send_wspr_struct(band_80m);
+      //}
     }
 // 60m    
 if ((rtc_time.minute() == 4 || rtc_time.minute() == 24 ||  rtc_time.minute() == 44))
@@ -486,9 +495,9 @@ if ((rtc_time.minute() == 16 || rtc_time.minute() == 36 ||  rtc_time.minute() ==
   // Sleep until next TX
   delay(500);
   }else{
+    delay(1000);
       send_wspr_struct(band_160m);
       send_wspr_struct(band_80m);
-      send_wspr_struct(band_80m2);
       send_wspr_struct(band_60m);
       send_wspr_struct(band_40m);
       send_wspr_struct(band_30m);

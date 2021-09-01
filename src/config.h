@@ -2,44 +2,46 @@
 #define LED_PIN 13
 
 // CALL
+// Enter here your CALL you are not allowed to use this sketch if you are not an licensed radio amateur
 char call[] = "N0CALL";
 
 
 
 // LOCATOR
-char* locator = "AA00";
+char* locator = "AA00AA";
 char* locator_full = "AA00AA";
 
 // DEBUGGING
-//#define DEBUG
-//#define DEBUG_GPS
+#define DEBUG
+#define DEBUG_GPS
 
 // Power Measurment
 bool POWERTEST = false;
 
+int calibration = -4369000;
 
 // Global variables
-#define WSPR_160m_FREQ 1836600UL //160m 
-#define WSPR_80m_FREQ  3594000ULL //80m 
-#define WSPR_80m_FREQ2 3568600ULL //80m 
-#define WSPR_60m_FREQ  5287200UL //60m 
-#define WSPR_40m_FREQ  7038600UL //40m 
-#define WSPR_30m_FREQ  10138700UL //30m 
-#define WSPR_20m_FREQ  14095600UL //20m 
-#define WSPR_17m_FREQ  18104600UL //17m 
-#define WSPR_15m_FREQ  21094600UL //15m 
-#define WSPR_12m_FREQ  24924600UL //12m 
-#define WSPR_10m_FREQ  28001300UL //10m
-#define WSPR_6m_FREQ   50293000UL //6m
-#define WSPR_4m_FREQ   70091000UL //4m
-#define WSPR_2m_FREQ  144504000UL //2m
+#define WSPR_160m_FREQ 1838060UL //160m 1838300
+#define WSPR_80m_FREQ  3570056UL //80m 3570300
+#define WSPR_60m_FREQ  5288779UL //60m  5288900
+#define WSPR_40m_FREQ  7040156UL //40m 7040300
+#define WSPR_30m_FREQ  10140158UL //30m 10140400
+#define WSPR_20m_FREQ  14097058UL //20m 14097300
+#define WSPR_17m_FREQ  18106093UL //17m 18106300
+#define WSPR_15m_FREQ  21096122UL //15m 21096300
+#define WSPR_12m_FREQ  24926172UL //12m 24926300
+#define WSPR_10m_FREQ  28126088UL //10m 28003000
+#define WSPR_6m_FREQ   50294573UL //6m 50294700
+#define WSPR_4m_FREQ   70092427UL //4m 70092700
+#define WSPR_2m_FREQ  144490496UL //2m 144505700
+                       
+
 
 #define WSPR_DELAY 683        // Delay value for WSPR
 #define WSPR_TONE_SPACING 146 // ~1.46 Hz
 
 // Powerlevel
-
-const uint8_t dbm = 29;
+uint8_t dbm = 29;
 
 bool send_160m = false;
 bool send_80m = true;
@@ -61,28 +63,26 @@ bool send_2m = false;
 
 
 // Relays
-#define RELAY_160m RELAY_PIN2  //160m 
+#define RELAY_160m RELAY_PIN0  //160m 
 #define RELAY_80m RELAY_PIN0  //80m
-#define RELAY_80m2 RELAY_PIN2  //80m  
-#define RELAY_80m3 RELAY_PIN3  //80m  
-#define RELAY_60m RELAY_PIN2  //60m 
-#define RELAY_40m RELAY_PIN2  //40m 
-#define RELAY_30m RELAY_PIN2  //30m 
-#define RELAY_20m RELAY_PIN2  //20m 
-#define RELAY_17m RELAY_PIN2  //17m 
-#define RELAY_15m RELAY_PIN2  //15m 
-#define RELAY_12m RELAY_PIN2  //12m 
-#define RELAY_10m RELAY_PIN1  //10m 
-#define RELAY_6m RELAY_PIN2  //6m 
-#define RELAY_4m RELAY_PIN2  //4m 
-#define RELAY_2m RELAY_PIN2  //2m 
+#define RELAY_60m RELAY_PIN0  //60m 
+#define RELAY_40m RELAY_PIN0  //40m 
+#define RELAY_30m RELAY_PIN0  //30m 
+#define RELAY_20m RELAY_PIN0  //20m 
+#define RELAY_17m RELAY_PIN0  //17m 
+#define RELAY_15m RELAY_PIN0  //15m 
+#define RELAY_12m RELAY_PIN0  //12m 
+#define RELAY_10m RELAY_PIN0  //10m 
+#define RELAY_6m RELAY_PIN0  //6m 
+#define RELAY_4m RELAY_PIN0  //4m 
+#define RELAY_2m RELAY_PIN0  //2m 
 
 
 //Output
 #define OUTPUT_160m SI5351_CLK0  //160m 
 #define OUTPUT_80m SI5351_CLK0  //80m 
-#define OUTPUT_80m2 SI5351_CLK1  //80m 
-#define OUTPUT_80m3 SI5351_CLK2  //80m 
+#define OUTPUT_80m2 SI5351_CLK0  //80m 
+#define OUTPUT_80m3 SI5351_CLK0  //80m 
 #define OUTPUT_60m SI5351_CLK0  //60m 
 #define OUTPUT_40m SI5351_CLK0  //40m 
 #define OUTPUT_30m SI5351_CLK0  //30m 
