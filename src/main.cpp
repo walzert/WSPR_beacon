@@ -85,7 +85,6 @@ struct Band{
 
 Band band_160m{"160m",WSPR_160m_FREQ,send_160m,RELAY_160m,OUTPUT_160m};
 Band band_80m{"80m",WSPR_80m_FREQ,send_80m,RELAY_80m,OUTPUT_80m};
-//Band band_80m2{"80m",WSPR_80m_FREQ2,send_80m,RELAY_80m,OUTPUT_80m};
 Band band_60m{"60m",WSPR_60m_FREQ,send_60m,RELAY_60m,OUTPUT_60m};
 Band band_40m{"40m",WSPR_40m_FREQ,send_40m,RELAY_40m,OUTPUT_40m};
 Band band_30m{"30m",WSPR_30m_FREQ,send_30m,RELAY_30m,OUTPUT_30m};
@@ -94,6 +93,10 @@ Band band_17m{"17m",WSPR_17m_FREQ,send_17m,RELAY_17m,OUTPUT_17m};
 Band band_15m{"15m",WSPR_15m_FREQ,send_15m,RELAY_15m,OUTPUT_15m};
 Band band_12m{"12m",WSPR_12m_FREQ,send_12m,RELAY_12m,OUTPUT_12m};
 Band band_10m{"10m",WSPR_10m_FREQ,send_10m,RELAY_10m,OUTPUT_10m};
+Band band_6m{"6m",WSPR_6m_FREQ,send_6m,RELAY_6m,OUTPUT_6m};
+Band band_4m{"4m",WSPR_4m_FREQ,send_4m,RELAY_4m,OUTPUT_4m};
+Band band_2m{"2m",WSPR_2m_FREQ,send_2m,RELAY_2m,OUTPUT_2m};
+
 
 //-------------------------------------------------------------------------------------
 // DEBUG
@@ -125,6 +128,27 @@ Band band_10m{"10m",WSPR_10m_FREQ,send_10m,RELAY_10m,OUTPUT_10m};
 #define GPS_AVAILABLE(x) Serial1.available()
 #define GPS_READ(x) Serial1.read()
 #endif
+
+#ifdef DISPLAY_USE
+#define DISPLAY_START(x) initDisplay(x)
+#define DISPLAY_GPS(x) printGPS(x)
+#define DISPLAY_BAND(x,y) printBand(x,y)
+#define DISPLAY_TX(x) printTX(x)
+#define DISPLAY_TIME(x) printTime(x)
+#define DISPLAY_TEMP(x) printTemp(x)
+#define DISPLAY_LOCATOR(x) printLocator(x)
+#define DISPLAY_TEXT(x,y) printText(x,y)
+#else
+#define DISPLAY_START(x)
+#define DISPLAY_GPS(x)
+#define DISPLAY_BAND(x,y) 
+#define DISPLAY_TX(x) 
+#define DISPLAY_TIME(x) 
+#define DISPLAY_TEMP(x)
+#define DISPLAY_LOCATOR(x) 
+#define DISPLAY_TEXT(x,y)
+#endif
+
 // Loop through the string, transmitting one character at a time.
 void encode(si5351_clock clk)
 {
@@ -274,12 +298,12 @@ void setup()
   DEBUG_BEGIN(115200);
   rtc.begin();
   GPS_BEGIN(9600);
-  initDisplay();
+  DISPLAY_START();
   DateTime starttime = rtc.now();
   // TX
   //String time = starttime.toString(buf1);
-  printGPS(false); 
-  printTime(starttime);
+  DISPLAY_GPS(false); 
+  DISPLAY_TIME(starttime);
   if(!POWERTEST){
   //printGPS(" GPS");
   DEBUG_PRINTLN("Wait for GPS");
@@ -291,7 +315,7 @@ void setup()
     {
       if (gps.encode(GPS_READ()))
       {
-        DEBUG_GPS_PRINT("Encodeded>> \t");
+        DEBUG_GPS_PRINT(">> ");
         String test = String(gps.time.hour());
         d = gps.date;
         t = gps.time;
@@ -333,11 +357,11 @@ void setup()
   }
   
   //jtencode.latlon_to_grid(float(gps.location.lat()), float(gps.location.lng()),locator);
-  printGPS(true);
+  DISPLAY_GPS(true);
   locator = get_mh(gps.location.lat(), gps.location.lng(), 4);
   locator_full = get_mh(gps.location.lat(), gps.location.lng(), 6);
   DEBUG_PRINTLN(locator);
-  printText("Time syncing", true);
+  DISPLAY_TEXT("Time syncing", true);
   DEBUG_PRINTLN("Time syncing");
 
   //encode current GPS signal to get latest timestamp for RTC
@@ -353,11 +377,11 @@ void setup()
 
   // TX
   //String time = now.toString(buf1);
-  printTime(now);
+  DISPLAY_TIME(now);
   DEBUG_PRINTLN("Time syncing");
   // Initialize the Si5351
   }
-  printText("Start SI5351", true);
+  DISPLAY_TEXT("Start SI5351", true);
   DEBUG_PRINTLN("Start SI5351");
 
   // Set SI5351  and outputs 
@@ -390,28 +414,28 @@ void setup()
   DEBUG_PRINTLN("Starting Transmisson mode...");
 
   //printText("TX ready");
-  printText(call, true);
-  printLocator();
+  DISPLAY_TEXT(call, true);
+  DISPLAY_LOCATOR();
   if(!POWERTEST){
   int delaying = 60 - (rtc.now().second());
   delay(delaying * 1000);}
-  printTemp();
+  DISPLAY_TEMP();
   
 }
 
 void send_wspr_struct(Band band)
 { if(band.send){
   freq = band.freq;
-  printTX(true);
-  printBand(band.name, true);
+  DISPLAY_TX(true);
+  DISPLAY_BAND(band.name, true);
   digitalWrite(band.relay, HIGH);
   DEBUG_PRINTLN("Transmisson " + band.name + " started");
   encode(band.clk);
   digitalWrite(band.relay, LOW);
-  printTX(false);
-  printBand("", false);
+  DISPLAY_TX(false);
+  DISPLAY_BAND("", false);
   resync = 0;
-  printTemp();
+  DISPLAY_TEMP();
   DEBUG_PRINTLN("Transmisson  " + band.name + " ended");
   if(POWERTEST){
     delay(60000);
@@ -506,5 +530,8 @@ if ((rtc_time.minute() == 16 || rtc_time.minute() == 36 ||  rtc_time.minute() ==
       send_wspr_struct(band_15m);
       send_wspr_struct(band_12m);
       send_wspr_struct(band_10m);
+      send_wspr_struct(band_6m);
+      send_wspr_struct(band_4m);
+      send_wspr_struct(band_2m);
   }
 }
