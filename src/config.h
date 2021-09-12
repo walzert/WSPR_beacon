@@ -15,8 +15,7 @@ char* locator_full = "AA00AA";
 #define DISPLAY_USE // Enable DISPLAY OUTPUT 
 // Power Measurment
 bool POWERTEST = false; // Enable POWERTEST for measureing dbm's  
-int calibration = 0;  // Use Etherkit si5351_calibration.ino to get calibration factor
-
+int calibration = -4269000;  // Use Etherkit si5351_calibration.ino to get calibration factor
 
 // Global variables
 #define WSPR_160m_FREQ 1838060UL //160m 

@@ -405,7 +405,8 @@ void setup()
 
   // Set SI5351  and outputs 
   si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
-  si5351.set_correction(calibration,SI5351_PLL_INPUT_XO);
+  if(si5351.get_correction(SI5351_PLL_INPUT_XO)==0)
+  {si5351.set_correction(calibration,SI5351_PLL_INPUT_XO);}
   si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA); // Set for max power if desired
   si5351.output_enable(SI5351_CLK0, 0);            // Disable the clock initially
   si5351.drive_strength(SI5351_CLK1, SI5351_DRIVE_8MA); // Set for max power if desired
