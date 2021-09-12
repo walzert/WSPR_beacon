@@ -5,35 +5,33 @@
 // Enter here your CALL you are not allowed to use this sketch if you are not an licensed radio amateur
 char call[] = "N0CALL";
 
-
-
 // LOCATOR
-char* locator = "AA00AA";
+char* locator = "AA00";
 char* locator_full = "AA00AA";
 
 // DEBUGGING
-#define DEBUG
-#define DEBUG_GPS
-#define DISPLAY
+#define DEBUG  // Enable Serial Commands for DEBUGING
+#define DEBUG_GPS  // Enable Serial Commands for DEBUGING GPS messages
+#define DISPLAY_USE // Enable DISPLAY OUTPUT 
 // Power Measurment
-bool POWERTEST = false;
-int calibration = 0;
-//int calibration = -4369000;
+bool POWERTEST = false; // Enable POWERTEST for measureing dbm's  
+int calibration = 0;  // Use Etherkit si5351_calibration.ino to get calibration factor
+
 
 // Global variables
-#define WSPR_160m_FREQ 1838060UL //160m 1838300 1,72 0,11
-#define WSPR_80m_FREQ  3568856UL //80m 3570300  3,35 0,22
-#define WSPR_60m_FREQ  5364779UL //60m  5288900 4,96 0,28
-#define WSPR_40m_FREQ  7040156UL //40m 7040300  6,6  0,44
-#define WSPR_30m_FREQ  10140158UL //30m 10140400  9,51 0,63
-#define WSPR_20m_FREQ  14095658UL //20m 14097300  13,21 0,88
-#define WSPR_17m_FREQ  18104693UL //17m 18106300  16,98 1,12 
-#define WSPR_15m_FREQ  21094622UL //15m 21096300  19,78 1,31
-#define WSPR_12m_FREQ  24926172UL //12m 24926300  23,37 1,55
-#define WSPR_10m_FREQ  28126088UL //10m 28003000  26,37  1,63
-#define WSPR_6m_FREQ   50293073UL //6m 50294700n  
-#define WSPR_4m_FREQ   70092427UL //4m 70092700
-#define WSPR_2m_FREQ  144890496UL //2m 144505700
+#define WSPR_160m_FREQ 1838060UL //160m 
+#define WSPR_80m_FREQ  3568656UL //80m 
+#define WSPR_60m_FREQ  5364779UL //60m  
+#define WSPR_40m_FREQ  7040156UL //40m 
+#define WSPR_30m_FREQ  10140158UL //30m 
+#define WSPR_20m_FREQ  14095658UL //20m 
+#define WSPR_17m_FREQ  18104693UL //17m 
+#define WSPR_15m_FREQ  21094622UL //15m 
+#define WSPR_12m_FREQ  24926172UL //12m 
+#define WSPR_10m_FREQ  28126088UL //10m 
+#define WSPR_6m_FREQ   50293073UL //6m 
+#define WSPR_4m_FREQ   70092427UL //4m 
+#define WSPR_2m_FREQ  144890496UL //2m 
                        
 
 
@@ -41,8 +39,10 @@ int calibration = 0;
 #define WSPR_TONE_SPACING 146 // ~1.46 Hz
 
 // Powerlevel
-uint8_t dbm = 29;
+uint8_t dbm = 27;
 
+
+// Enable sending on bands
 bool send_160m = false;
 bool send_80m = true;
 bool send_60m = false;
@@ -57,12 +57,14 @@ bool send_6m = false;
 bool send_4m = false;  
 bool send_2m = false;
 
+
+// Define PINs for the relays sending on bands
 #define RELAY_PIN0 7
 #define RELAY_PIN1 9
 #define RELAY_PIN2 10
 
 
-// Relays
+// Set relays for the different bands
 #define RELAY_160m RELAY_PIN0  //160m 
 #define RELAY_80m RELAY_PIN0  //80m
 #define RELAY_60m RELAY_PIN0  //60m 
@@ -78,7 +80,7 @@ bool send_2m = false;
 #define RELAY_2m RELAY_PIN0  //2m 
 
 
-//Output
+//// Set Output on SI5351 for the different bands
 #define OUTPUT_160m SI5351_CLK0  //160m 
 #define OUTPUT_80m SI5351_CLK0  //80m 
 #define OUTPUT_80m2 SI5351_CLK0  //80m 

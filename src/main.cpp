@@ -14,11 +14,15 @@ Then the SI5351 will be initilaized and after that the WSPR will send by active 
 //-------------------------------------------------------------------------------------
 // RTC clock
 #include "RTClib.h"
+
 RTC_DS3231 rtc;
 char buf1[] = "hh:mm";
-int oldMinute = 0;
+int oldMinute = 99;
+int oldSecond = 0;
 char t_sz[32];
 char d_sz[32];
+DateTime rtc_time;
+DateTime now;
 //-------------------------------------------------------------------------------------
 #include <rs_common.h>
 #include <int.h>
@@ -193,6 +197,20 @@ void initDisplay(){
   delay(2000);
 }
 
+void relayTest(){
+      digitalWrite(RELAY_PIN0, HIGH);
+      delay(1000);
+      digitalWrite(RELAY_PIN0, LOW);
+      delay(1000);
+      digitalWrite(RELAY_PIN1, HIGH);
+      delay(1000);
+      digitalWrite(RELAY_PIN1, LOW);
+      delay(1000);
+      digitalWrite(RELAY_PIN2, HIGH);
+      delay(1000);
+      digitalWrite(RELAY_PIN2, LOW);
+      delay(1000);
+}
 void printGPS(bool GPS)
 {
   display.fillRect(0, 0, 24, 8, BLACK);
@@ -294,19 +312,19 @@ void printText(String text, bool draw)
 }
 
 void setup()
-{
+{ delay(10000);
   DEBUG_BEGIN(115200);
   rtc.begin();
+ now = rtc.now();
   GPS_BEGIN(9600);
   DISPLAY_START();
-  DateTime starttime = rtc.now();
   // TX
   //String time = starttime.toString(buf1);
   DISPLAY_GPS(false); 
-  DISPLAY_TIME(starttime);
+  DISPLAY_TIME(now);
   if(!POWERTEST){
   //printGPS(" GPS");
-  DEBUG_PRINTLN("Wait for GPS");
+  DEBUG_PRINTLN(F("Wait for GPS"));
   while (!gps.location.isValid())
   {
     // DEBUG_GPS_PRINTLN("No GPS");
@@ -314,8 +332,8 @@ void setup()
     if (GPS_AVAILABLE() > 0)
     {
       if (gps.encode(GPS_READ()))
-      {
-        DEBUG_GPS_PRINT(">> ");
+      { 
+        DEBUG_GPS_PRINT(F(">> "));
         String test = String(gps.time.hour());
         d = gps.date;
         t = gps.time;
@@ -328,7 +346,7 @@ void setup()
         {
           char sz[32];
           sprintf(sz, "%02d/%02d/%02d ", d.month(), d.day(), d.year());
-          DEBUG_GPS_PRINT(sz);
+          DEBUG_GPS_PRINT(F(sz));
         }
         DEBUG_GPS_PRINT("\t");
         if (!t.isValid())
@@ -340,12 +358,14 @@ void setup()
         {
           char sz[32];
           sprintf(sz, "%02d:%02d:%02d ", t.hour(), t.minute(), t.second());
-          DEBUG_GPS_PRINT(sz);
+          DEBUG_GPS_PRINT(F(sz));
           DEBUG_GPS_PRINT("\t");
         }
         //delay(1000);
         //printText(test);
-        DEBUG_GPS_PRINT("Lat: ");
+        DEBUG_GPS_PRINT(F("Sats: "));
+        DEBUG_GPS_PRINT(gps.satellites.value());
+        DEBUG_GPS_PRINT("\tLat: ");
         DEBUG_GPS_PRINT(gps.location.lat());
         DEBUG_GPS_PRINT("\tLong: ");
         DEBUG_GPS_PRINTLN(gps.location.lng());
@@ -373,12 +393,11 @@ void setup()
   //set RTC to date from GPS
 
   rtc.adjust(DateTime(d.year(), d.month(), d.day(), t.hour(), t.minute(), t.second()));
-  DateTime now = rtc.now();
-
+  //DateTime now = rtc.now();
   // TX
   //String time = now.toString(buf1);
   DISPLAY_TIME(now);
-  DEBUG_PRINTLN("Time syncing");
+  DEBUG_PRINTLN("Time synced");
   // Initialize the Si5351
   }
   DISPLAY_TEXT("Start SI5351", true);
@@ -411,16 +430,17 @@ void setup()
 
   // Encode the message in the transmit buffer
   set_tx_buffer();
-  DEBUG_PRINTLN("Starting Transmisson mode...");
-
+  DEBUG_PRINTLN("Relay Test");
+  relayTest();
+  DEBUG_PRINTLN("Relay tested");
   //printText("TX ready");
   DISPLAY_TEXT(call, true);
   DISPLAY_LOCATOR();
-  if(!POWERTEST){
+/*   if(!POWERTEST){
   int delaying = 60 - (rtc.now().second());
-  delay(delaying * 1000);}
+  delay(delaying * 1000);} */
   DISPLAY_TEMP();
-  
+  DEBUG_PRINTLN("Starting Transmisson mode...");
 }
 
 void send_wspr_struct(Band band)
@@ -437,42 +457,32 @@ void send_wspr_struct(Band band)
   resync = 0;
   DISPLAY_TEMP();
   DEBUG_PRINTLN("Transmisson  " + band.name + " ended");
-  if(POWERTEST){
-    delay(60000);
-  }
 }
 }
 
-void loop()
-{
-if(!POWERTEST){
-
-  DateTime rtc_time = rtc.now();
-
-if(rtc_time.minute() != oldMinute)
-{
-oldMinute = rtc_time.minute();
-
-  //String myTime = String(rtc_time.hour()) + ":"+String(rtc_time.minute());
-  printTime(rtc_time);
-}
-
-  if (rtc_time.second() == 00)
+void loop(){
+  //DEBUG_PRINTLN("Loop...");
+  rtc_time = rtc.now();
+  if (rtc_time.second() == 0)
   {
+   if(!POWERTEST){
+  //if (oldMinute != rtc_time.minute()){
+  //  DEBUG_PRINTLN("oldMinute");
+  //  oldMinute = int(rtc_time.minute());
+    DISPLAY_TIME(rtc_time);
+  //  DEBUG_PRINTLN(String(oldMinute));
+  //}
+ 
 // 160m   
-if ((rtc_time.minute() == 00 || rtc_time.minute() == 20 ||  rtc_time.minute() == 40))
+if ((rtc_time.minute() == 0 || rtc_time.minute() == 20 ||  rtc_time.minute() == 40))
     {
       send_wspr_struct(band_160m);
     } 
 // 80m 
     if ((rtc_time.minute() == 2 || rtc_time.minute() == 22 ||  rtc_time.minute() == 42))
     {
-      //if(rtc_time.minute() == 42){
-      //  send_wspr_struct(band_80m2);
-     // }
-      //else {
       send_wspr_struct(band_80m);
-      //}
+
     }
 // 60m    
 if ((rtc_time.minute() == 4 || rtc_time.minute() == 24 ||  rtc_time.minute() == 44))
@@ -511,15 +521,16 @@ if ((rtc_time.minute() == 16 || rtc_time.minute() == 36 ||  rtc_time.minute() ==
       send_wspr_struct(band_12m);
     } 
 // 10m 
-    if ((rtc_time.minute() == 18 || rtc_time.minute() == 38 || rtc_time.minute() == 58))
+if ((rtc_time.minute() == 18 || rtc_time.minute() == 38 || rtc_time.minute() == 58))
     {
       send_wspr_struct(band_10m);
     }
-  }
-  // Sleep until next TX
-  delay(500);
-  }else{
-    delay(1000);
+  
+   
+  }}else{
+
+    if(rtc_time.second() == 0){
+      if((rtc_time.minute() % 2)==0){
       send_wspr_struct(band_160m);
       send_wspr_struct(band_80m);
       send_wspr_struct(band_60m);
@@ -533,5 +544,9 @@ if ((rtc_time.minute() == 16 || rtc_time.minute() == 36 ||  rtc_time.minute() ==
       send_wspr_struct(band_6m);
       send_wspr_struct(band_4m);
       send_wspr_struct(band_2m);
+      }
   }
+  }
+  // Sleep until next TX
+  delay(500);
 }
