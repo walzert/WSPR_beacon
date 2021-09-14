@@ -3,11 +3,11 @@
 
 // CALL
 // Enter here your CALL you are not allowed to use this sketch if you are not an licensed radio amateur
-char call[] = "DO7GN";
+char call[] = "N0CALL";
 
 // LOCATOR
-char* locator = "JN48";
-char* locator_full = "JN48OL";
+char* locator = "AA00";
+char* locator_full = "AA00AA";
 
 // DEBUGGING
 #define DEBUG  // Enable Serial Commands for DEBUGING
